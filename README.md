@@ -39,7 +39,7 @@ Clone the repo
 ```shell
 mkdir -p /test_ws/src
 cd /test_ws/src
-git clone https://github.com/marcinmatecki/Super-LIO-to-HDMappnig.git --recursive
+git clone https://github.com/marcinmatecki/Super-LIO-to-HDMapping.git --recursive
 cd ..
 catkin_make
 ```

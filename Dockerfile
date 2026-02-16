@@ -54,10 +54,6 @@ WORKDIR /ros_ws
 
 COPY ./src ./src
 
-WORKDIR ./src/Super-LIO
-
-RUN git checkout ros1
-
 WORKDIR /ros_ws
 
 RUN source /opt/ros/noetic/setup.bash && \

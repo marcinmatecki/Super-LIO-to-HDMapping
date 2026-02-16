@@ -1,48 +1,100 @@
-# SUPER-LIO to HDMapping simlified instruction
+# [SUPER-LIO](https://github.com/gaoxiang12/faster-lio) converter to [HDMapping](https://github.com/MapsHD/HDMapping)
 
-## Step 1 (prepare data)
-Download the dataset `reg-1.bag` by clicking [link](https://cloud.cylab.be/public.php/dav/files/7PgyjbM2CBcakN5/reg-1.bag) (it is part of [Bunker DVI Dataset](https://charleshamesse.github.io/bunker-dvi-dataset)).
+## Hint
 
-File 'reg-1.bag' is an input for further calculations.
-It should be located in '~/hdmapping-benchmark/data'.
+Please change branch to [Bunker-DVI-Dataset-reg-1](https://github.com/MapsHD/benchmark-Faster-LIO-to-HDMapping/tree/Bunker-DVI-Dataset-reg-1) for quick experiment.  
 
 
-## Step 2 (prepare docker)
+## Example Dataset: 
+
+Download the dataset from [Bunker DVI Dataset](https://charleshamesse.github.io/bunker-dvi-dataset/)  
+
+## Intended use 
+
+This small toolset allows to integrate SLAM solution provided by [faster-lio](https://github.com/gaoxiang12/faster-lio) with [HDMapping](https://github.com/MapsHD/HDMapping).
+This repository contains ROS 1 workspace that :
+  - submodule to tested revision of faster-lio
+  - a converter that listens to topics advertised from odometry node and save data in format compatible with HDMapping.
+
+## Dependecies
 ```shell
-mkdir -p ~/hdmapping-benchmark
-cd ~/hdmapping-benchmark
-git clone https://github.com/MapsHD/benchmark-SUPER-LIO-to-HDMapping.git --recursive
-cd benchmark-SUPER-LIO-to-HDMapping
-git checkout Bunker-DVI-Dataset-reg-1
-docker build -t super-lio_noetic .
+sudo apt install libgoogle-glog-dev libtbb-dev
 ```
 
-## Step 3 (run docker, file 'reg-1.bag' should be in '~/hdmapping-benchmark/data')
+
+## livox_ros_driver
+
 ```shell
-cd ~/hdmapping-benchmark/benchmark-SUPER-LIO-to-HDMapping
-chmod +x docker_session_run-ros1-super-lio.sh 
-cd ~/hdmapping-benchmark/data
-~/hdmapping-benchmark/benchmark-SUPER-LIO-to-HDMapping/docker_session_run-ros1-super-lio.sh reg-1.bag .
+git clone https://github.com/Livox-SDK/livox_ros_driver.git ws_livox/src
+cd ws_livox
+catkin_make
+
+Use the following command to update the current ROS package environment :
+
+source ./devel/setup.sh
+```
+## Building
+
+Clone the repo
+```shell
+mkdir -p /test_ws/src
+cd /test_ws/src
+git clone https://github.com/marcinmatecki/Super-LIO-to-HDMappnig.git --recursive
+cd ..
+catkin_make
 ```
 
-## Step 4 (Open and visualize data)
-Expected data should appear in ~/hdmapping-benchmark/data/output_hdmapping-super-lio
-Use tool [multi_view_tls_registration_step_2](https://github.com/MapsHD/HDMapping) to open session.json from ~/hdmapping-benchmark/data/output_hdmapping-super-lio.
+## Usage - data SLAM:
 
-You should see following data
+Prepare recorded bag with estimated odometry:
 
-lio_initial_poses.reg
+In first terminal record bag:
+```shell
+rosbag record /lio/odom /lio/cloud_world
+```
 
-poses.reg
+and start odometry:
+```shell 
+cd /test_ws/
+source ./devel/setup.sh # adjust to used shell
+roslaunch super_lio Livox_mid360.launch
+rosbag play your bag file
+```
 
-scan_lio_*.laz
+## Usage - conversion:
 
-session.json
+```shell
+cd /test_ws/
+source ./devel/setup.sh # adjust to used shell
+rosrun super-lio-to-hdmapping listener <recorded_bag> <output_dir>
+```
 
-trajectory_lio_*.csv
+## Record the bag file:
 
-## Movie
-[[movie]](https://youtu.be/KlZf7nHeVmI)
+```shell
+rosbag record /lio/odom /lio/cloud_world
+```
 
-## Contact email
-januszbedkowski@gmail.com
+## Super LIO Launch:
+
+```shell
+cd /test_ws/
+source ./devel/setup.sh # adjust to used shell
+roslaunch super_lio Livox_mid360.launch
+rosbag play your bag file
+```
+
+## During the record (if you want to stop recording earlier) / after finishing the bag:
+
+```shell
+In the terminal where the ros record is, interrupt the recording by CTRL+C
+Do it also in ros launch terminal by CTRL+C.
+```
+
+## Usage - Conversion (ROS bag to HDMapping, after recording stops):
+
+```shell
+cd /test_ws/
+source ./devel/setup.sh # adjust to used shell
+rosrun super-lio-to-hdmapping listener <recorded_bag> <output_dir>
+```
